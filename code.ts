@@ -13,9 +13,16 @@ interface SelectedFont {
   style: string;
 }
 
+interface Collection {
+  id: string;
+  name: string;
+  fonts: SelectedFont[];
+}
+
 type UIMessage =
   | { type: 'init' }
-  | { type: 'create-nodes'; text: string; fontSize: number; fonts: SelectedFont[] };
+  | { type: 'create-nodes'; text: string; fontSize: number; fonts: SelectedFont[] }
+  | { type: 'save-collections'; collections: Collection[] };
 
 // Regroupe la liste plate renvoyée par listAvailableFontsAsync
 // (un Font par couple famille/style) en familles avec leurs styles.
@@ -93,8 +100,19 @@ async function createTextNodes(text: string, fontSize: number, fonts: SelectedFo
 
 figma.ui.onmessage = async (msg: UIMessage) => {
   if (msg.type === 'init') {
-    const families = await collectFamilies();
+    // clientStorage : persistant à travers tous les fichiers Figma,
+    // propre à l'utilisateur et au plugin, local à la machine.
+    const [families, collections] = await Promise.all([
+      collectFamilies(),
+      figma.clientStorage.getAsync('collections')
+    ]);
     figma.ui.postMessage({ type: 'fonts', families });
+    figma.ui.postMessage({ type: 'collections', collections: collections || null });
+    return;
+  }
+
+  if (msg.type === 'save-collections') {
+    await figma.clientStorage.setAsync('collections', msg.collections);
     return;
   }
 

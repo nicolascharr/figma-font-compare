@@ -158,9 +158,71 @@
   }
   .filter-group button.active .count { color: var(--accent); }
 
+  .collection-item { display: flex; align-items: center; gap: 2px; }
+  .collection-item .col-btn { width: auto; flex: 1; min-width: 0; }
+  .collection-item .col-btn .label {
+    flex: 1;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-right: 8px;
+  }
+  .collection-item .col-del {
+    width: auto;
+    flex: 0 0 auto;
+    padding: 4px 6px;
+    visibility: hidden;
+  }
+  .collection-item:hover .col-del { visibility: visible; }
+  .new-project { color: var(--text-faint); }
+  .rename-input {
+    width: 100%;
+    height: 26px;
+    padding: 0 8px;
+    background: var(--bg);
+    border: 1px solid var(--accent);
+    border-radius: 5px;
+    outline: none;
+  }
+
   /* ── Liste de prévisualisation ───────────────────── */
+  .list-pane {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .list-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 7px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    flex-shrink: 0;
+  }
+  .toolbar-btn {
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-dim);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: color 150ms ease-out;
+  }
+  .toolbar-btn:hover:not(:disabled) { color: var(--text); }
+  .toolbar-btn:disabled {
+    color: var(--text-faint);
+    text-decoration: none;
+    cursor: default;
+  }
+
   .list {
     flex: 1;
+    min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
   }
@@ -209,6 +271,26 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+
+  .row .star,
+  .row .remove {
+    margin-top: 1px;
+    padding: 2px 4px;
+    background: none;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1;
+    color: var(--text-faint);
+    visibility: hidden;
+    flex-shrink: 0;
+  }
+  .row:hover .star, .row:hover .remove { visibility: visible; }
+  .row .star:hover { color: oklch(0.68 0.15 85); }
+  .row .star.starred { visibility: visible; color: oklch(0.72 0.14 85); }
+  .row .remove:hover { color: var(--text); background: var(--bg-hover); }
+  .row.unavailable { opacity: 0.55; }
 
   /* Squelettes de chargement */
   .skeleton {
@@ -259,16 +341,6 @@
     background: var(--bg);
   }
   footer .summary { flex: 1; color: var(--text-dim); }
-  footer .clear {
-    background: none;
-    border: none;
-    color: var(--text-dim);
-    cursor: pointer;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-  }
-  footer .clear:hover { color: var(--text); }
-  footer .clear[hidden] { display: none; }
 
   #addBtn {
     height: 32px;
@@ -283,6 +355,73 @@
   }
   #addBtn:hover:not(:disabled) { background: var(--accent-hover); }
   #addBtn:disabled { opacity: 0.45; cursor: default; }
+
+  .collect-wrap { position: relative; }
+  #collectBtn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 12px;
+    background: none;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 150ms ease-out;
+  }
+  #collectBtn:hover:not(:disabled) { background: var(--bg-hover); }
+  #collectBtn:disabled { opacity: 0.45; cursor: default; }
+  #collectBtn .chev { font-size: 11px; color: var(--text-dim); }
+
+  .menu {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    right: 0;
+    min-width: 230px;
+    padding: 4px;
+    background: var(--bg);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    box-shadow: 0 4px 16px oklch(0.2 0.02 280 / 0.18);
+    z-index: 10;
+  }
+  .menu .item {
+    display: block;
+    width: 100%;
+    padding: 6px 8px;
+    text-align: left;
+    background: none;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .menu .item:hover { background: var(--bg-hover); }
+  .menu .divider { height: 1px; margin: 4px 0; background: var(--border); }
+  .menu .new-form { display: flex; gap: 6px; padding: 4px; }
+  .menu .new-form input {
+    flex: 1;
+    height: 28px;
+    padding: 0 8px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    outline: none;
+  }
+  .menu .new-form input:focus { border-color: var(--accent); }
+  .menu .new-form button {
+    height: 28px;
+    padding: 0 10px;
+    background: var(--accent);
+    color: var(--accent-text);
+    border: none;
+    border-radius: 5px;
+    font-weight: 600;
+    cursor: pointer;
+  }
 </style>
 </head>
 <body>
@@ -315,14 +454,28 @@
         <button data-source="google">Figma Cloud <span class="count"></span></button>
         <button data-source="system">Système <span class="count"></span></button>
       </div>
+
+      <div class="filter-group" id="collectionGroup">
+        <h3>Collections</h3>
+        <div id="collectionList"></div>
+        <button id="newProjectBtn" class="new-project">+ Nouveau projet</button>
+      </div>
     </aside>
 
-    <section class="list" id="list" aria-label="Aperçu des polices"></section>
+    <section class="list-pane">
+      <div class="list-toolbar">
+        <button class="toolbar-btn" id="clearBtn" disabled>Tout décocher</button>
+      </div>
+      <div class="list" id="list" aria-label="Aperçu des polices"></div>
+    </section>
   </main>
 
   <footer>
     <span class="summary" id="summary">Chargement des polices…</span>
-    <button class="clear" id="clearBtn" hidden>Tout décocher</button>
+    <div class="collect-wrap">
+      <button id="collectBtn" disabled>Ajouter à la collection <span class="chev">▾</span></button>
+      <div class="menu" id="collectMenu" hidden></div>
+    </div>
     <button id="addBtn" disabled>Ajouter au Canvas</button>
   </footer>
 
@@ -453,7 +606,10 @@ const state = {
   source: 'all',
   sampleText: '',
   fontSize: 36,
-  creating: false
+  creating: false,
+  availableSet: new Set(),
+  collection: null,         // id de la collection active (filtre), ou null
+  collections: [{ id: 'favorites', name: 'Favoris', fonts: [] }]
 };
 
 const listEl = document.getElementById('list');
@@ -464,6 +620,10 @@ const sizeValue = document.getElementById('sizeValue');
 const summaryEl = document.getElementById('summary');
 const clearBtn = document.getElementById('clearBtn');
 const addBtn = document.getElementById('addBtn');
+const collectBtn = document.getElementById('collectBtn');
+const collectMenu = document.getElementById('collectMenu');
+const collectionList = document.getElementById('collectionList');
+const newProjectBtn = document.getElementById('newProjectBtn');
 
 /* Style par défaut d'une famille : Regular si présent, sinon le plus proche. */
 function pickDefaultStyle(styles) {
@@ -473,6 +633,72 @@ function pickDefaultStyle(styles) {
     if (hit) return hit;
   }
   return styles[0];
+}
+
+/* ════════════════════════════════════════════════════
+   Collections : « Favoris » est une collection par
+   défaut épinglée ; les projets sont des collections
+   nommées. Persistance via figma.clientStorage côté
+   sandbox (messages save-collections / collections).
+   ════════════════════════════════════════════════════ */
+
+function favorites() {
+  return state.collections[0];
+}
+
+function activeCollection() {
+  if (!state.collection) return null;
+  return state.collections.find(c => c.id === state.collection) || null;
+}
+
+function isFavorite(family) {
+  return favorites().fonts.some(f => f.family === family);
+}
+
+function persistCollections() {
+  parent.postMessage({ pluginMessage: { type: 'save-collections', collections: state.collections } }, '*');
+}
+
+function toggleFavorite(entry) {
+  const fav = favorites();
+  const i = fav.fonts.findIndex(f => f.family === entry.family);
+  if (i >= 0) fav.fonts.splice(i, 1);
+  else fav.fonts.push({ family: entry.family, style: pickDefaultStyle(entry.styles) });
+  persistCollections();
+  renderCollections();
+}
+
+function createProject(name, fonts) {
+  const project = {
+    id: 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    name,
+    fonts
+  };
+  state.collections.push(project);
+  persistCollections();
+  renderCollections();
+  return project;
+}
+
+function addSelectionTo(col) {
+  let added = 0;
+  state.selected.forEach((style, family) => {
+    if (!col.fonts.some(f => f.family === family)) {
+      col.fonts.push({ family, style });
+      added++;
+    }
+  });
+  persistCollections();
+  renderCollections();
+  if (state.collection) applyFilters();
+  flashSummary(added + ' police' + (added > 1 ? 's' : '') + ' ajoutée' + (added > 1 ? 's' : '') + ' à « ' + col.name + ' »');
+}
+
+let summaryTimer = null;
+function flashSummary(text) {
+  summaryEl.textContent = text;
+  clearTimeout(summaryTimer);
+  summaryTimer = setTimeout(updateSummary, 2500);
 }
 
 /* ── Squelettes pendant le chargement initial ── */
@@ -489,13 +715,27 @@ function showSkeletons() {
 /* ── Filtrage ── */
 function applyFilters() {
   const q = state.query.trim().toLowerCase();
+  const col = activeCollection();
+  const colFamilies = col ? new Set(col.fonts.map(f => f.family)) : null;
+
   state.filtered = state.allFamilies.filter(f => {
+    if (colFamilies && !colFamilies.has(f.family)) return false;
     if (q && !f.family.toLowerCase().includes(q)) return false;
     if (state.category !== 'all' && f.category !== state.category) return false;
     if (state.source === 'google' && !f.isGoogle) return false;
     if (state.source === 'system' && f.isGoogle) return false;
     return true;
   });
+
+  // Polices d'une collection absentes de cette machine : affichées grisées.
+  if (col) {
+    for (const f of col.fonts) {
+      if (!state.availableSet.has(f.family) && (!q || f.family.toLowerCase().includes(q))) {
+        state.filtered.push({ family: f.family, styles: [f.style], category: 'sans', isGoogle: false, unavailable: true });
+      }
+    }
+  }
+
   renderFromScratch();
   updateSummary();
 }
@@ -525,7 +765,12 @@ function renderFromScratch() {
   if (state.filtered.length === 0) {
     const empty = document.createElement('div');
     empty.className = 'empty';
-    empty.innerHTML = '<p>Aucune police ne correspond à ces filtres.</p>';
+    const p = document.createElement('p');
+    const col = activeCollection();
+    p.textContent = col && col.fonts.length === 0
+      ? "« " + col.name + " » est vide : cochez des polices puis « Ajouter à la collection », ou cliquez sur l'étoile d'une ligne."
+      : 'Aucune police ne correspond à ces filtres.';
+    empty.appendChild(p);
     const reset = document.createElement('button');
     reset.textContent = 'Réinitialiser les filtres';
     reset.addEventListener('click', resetFilters);
@@ -560,6 +805,7 @@ function buildRow(entry) {
   const checkbox = document.createElement('input');
   checkbox.type = 'checkbox';
   checkbox.checked = state.selected.has(entry.family);
+  checkbox.disabled = !!entry.unavailable;
   checkbox.addEventListener('change', () => {
     if (checkbox.checked) {
       state.selected.set(entry.family, pickDefaultStyle(entry.styles));
@@ -594,6 +840,14 @@ function buildRow(entry) {
     meta.appendChild(badge);
   }
 
+  if (entry.unavailable) {
+    row.classList.add('unavailable');
+    const badge = document.createElement('span');
+    badge.className = 'badge';
+    badge.textContent = 'Indisponible sur cette machine';
+    meta.appendChild(badge);
+  }
+
   const preview = document.createElement('div');
   preview.className = 'preview';
   preview.style.fontFamily = "'" + entry.family.replace(/'/g, "\\'") + "', var(--preview-fallback)";
@@ -604,6 +858,43 @@ function buildRow(entry) {
   row.appendChild(checkbox);
   row.appendChild(content);
 
+  if (entry.unavailable) {
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'remove';
+    remove.textContent = '✕';
+    remove.title = 'Retirer de la collection';
+    remove.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      const col = activeCollection();
+      if (!col) return;
+      col.fonts = col.fonts.filter(f => f.family !== entry.family);
+      persistCollections();
+      renderCollections();
+      applyFilters();
+    });
+    row.appendChild(remove);
+  } else {
+    const star = document.createElement('button');
+    star.type = 'button';
+    star.title = 'Favori';
+    const syncStar = () => {
+      const fav = isFavorite(entry.family);
+      star.className = 'star' + (fav ? ' starred' : '');
+      star.textContent = fav ? '★' : '☆';
+    };
+    syncStar();
+    star.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleFavorite(entry);
+      syncStar();
+      if (state.collection === 'favorites') applyFilters();
+    });
+    row.appendChild(star);
+  }
+
   visibilityObserver.observe(row);
   return row;
 }
@@ -613,7 +904,8 @@ function updateSummary() {
   const n = state.selected.size;
   summaryEl.textContent = state.filtered.length + ' police' + (state.filtered.length > 1 ? 's' : '')
     + (n > 0 ? ' · ' + n + ' sélectionnée' + (n > 1 ? 's' : '') : '');
-  clearBtn.hidden = n === 0;
+  clearBtn.disabled = n === 0;
+  collectBtn.disabled = n === 0;
   addBtn.disabled = n === 0 || state.creating;
   addBtn.textContent = n === 0
     ? 'Ajouter au Canvas'
@@ -625,8 +917,10 @@ function resetFilters() {
   state.query = '';
   state.category = 'all';
   state.source = 'all';
+  state.collection = null;
   searchInput.value = '';
   syncFilterButtons();
+  renderCollections();
   applyFilters();
 }
 
@@ -654,6 +948,173 @@ function updateFilterCounts() {
     btn.querySelector('.count').textContent = counts[key];
   });
 }
+
+/* ── Sidebar : rendu des collections ── */
+function renderCollections() {
+  collectionList.innerHTML = '';
+  for (const col of state.collections) {
+    const item = document.createElement('div');
+    item.className = 'collection-item';
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'col-btn' + (state.collection === col.id ? ' active' : '');
+    const label = document.createElement('span');
+    label.className = 'label';
+    label.textContent = (col.id === 'favorites' ? '★ ' : '') + col.name;
+    const count = document.createElement('span');
+    count.className = 'count';
+    count.textContent = col.fonts.length;
+    btn.appendChild(label);
+    btn.appendChild(count);
+    btn.addEventListener('click', () => {
+      state.collection = state.collection === col.id ? null : col.id;
+      renderCollections();
+      applyFilters();
+    });
+    item.appendChild(btn);
+
+    if (col.id !== 'favorites') {
+      btn.title = 'Double-clic pour renommer';
+      btn.addEventListener('dblclick', () => startRename(col, item));
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'col-del';
+      del.title = 'Supprimer le projet';
+      del.textContent = '✕';
+      del.addEventListener('click', () => {
+        state.collections = state.collections.filter(c => c.id !== col.id);
+        if (state.collection === col.id) state.collection = null;
+        persistCollections();
+        renderCollections();
+        applyFilters();
+        flashSummary('Projet « ' + col.name + ' » supprimé');
+      });
+      item.appendChild(del);
+    }
+    collectionList.appendChild(item);
+  }
+}
+
+function startRename(col, item) {
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'rename-input';
+  input.value = col.name;
+  item.replaceChildren(input);
+  input.focus();
+  input.select();
+  const commit = () => {
+    const name = input.value.trim();
+    if (name) col.name = name;
+    persistCollections();
+    renderCollections();
+  };
+  input.addEventListener('blur', commit);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') input.blur();
+    if (e.key === 'Escape') {
+      input.removeEventListener('blur', commit);
+      renderCollections();
+    }
+  });
+}
+
+newProjectBtn.addEventListener('click', () => {
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'rename-input';
+  input.placeholder = 'Nom du projet…';
+  newProjectBtn.replaceWith(input);
+  input.focus();
+  input.addEventListener('blur', () => {
+    const name = input.value.trim();
+    if (name) createProject(name, []);
+    input.replaceWith(newProjectBtn);
+  });
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') input.blur();
+    if (e.key === 'Escape') { input.value = ''; input.blur(); }
+  });
+});
+
+/* ── Menu « Ajouter à la collection » ── */
+function menuItem(label, onClick) {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'item';
+  btn.textContent = label;
+  btn.addEventListener('click', onClick);
+  return btn;
+}
+
+function buildCollectMenu() {
+  collectMenu.innerHTML = '';
+  collectMenu.appendChild(menuItem('★ Ajouter aux favoris', () => {
+    addSelectionTo(favorites());
+    closeCollectMenu();
+  }));
+
+  const projects = state.collections.slice(1);
+  if (projects.length > 0) {
+    const divider = document.createElement('div');
+    divider.className = 'divider';
+    collectMenu.appendChild(divider);
+    for (const p of projects) {
+      collectMenu.appendChild(menuItem('Ajouter à « ' + p.name + ' »', () => {
+        addSelectionTo(p);
+        closeCollectMenu();
+      }));
+    }
+  }
+
+  const divider = document.createElement('div');
+  divider.className = 'divider';
+  collectMenu.appendChild(divider);
+  collectMenu.appendChild(menuItem('+ Nouveau projet…', showNewProjectForm));
+}
+
+// Champ de nom inline dans le menu : pas de modal pour saisir un mot.
+function showNewProjectForm() {
+  const form = document.createElement('div');
+  form.className = 'new-form';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.placeholder = 'Nom du projet (client, marque…)';
+  const create = document.createElement('button');
+  create.type = 'button';
+  create.textContent = 'Créer';
+  const submit = () => {
+    const name = input.value.trim();
+    if (!name) { input.focus(); return; }
+    const fonts = [];
+    state.selected.forEach((style, family) => fonts.push({ family, style }));
+    const project = createProject(name, fonts);
+    closeCollectMenu();
+    flashSummary(fonts.length + ' police' + (fonts.length > 1 ? 's' : '') + ' → nouveau projet « ' + project.name + ' »');
+  };
+  create.addEventListener('click', submit);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
+  form.appendChild(input);
+  form.appendChild(create);
+  collectMenu.replaceChild(form, collectMenu.lastElementChild);
+  input.focus();
+}
+
+function closeCollectMenu() { collectMenu.hidden = true; }
+
+collectBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  if (collectMenu.hidden) {
+    buildCollectMenu();
+    collectMenu.hidden = false;
+  } else {
+    closeCollectMenu();
+  }
+});
+collectMenu.addEventListener('click', e => e.stopPropagation());
+document.addEventListener('click', closeCollectMenu);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCollectMenu(); });
 
 /* ════════════════════════════════════════════════════
    Événements
@@ -735,8 +1196,18 @@ window.onmessage = event => {
       category: classify(f.family),
       isGoogle: GOOGLE_FONTS.has(f.family)
     }));
+    state.availableSet = new Set(state.allFamilies.map(f => f.family));
     updateFilterCounts();
     applyFilters();
+    return;
+  }
+
+  if (msg.type === 'collections') {
+    if (Array.isArray(msg.collections) && msg.collections.length > 0) {
+      state.collections = msg.collections;
+    }
+    renderCollections();
+    if (state.allFamilies.length > 0) applyFilters();
     return;
   }
 
@@ -753,6 +1224,7 @@ window.onmessage = event => {
 
 /* ── Démarrage ── */
 showSkeletons();
+renderCollections();
 parent.postMessage({ pluginMessage: { type: 'init' } }, '*');
 </script>
 </body>

@@ -67,8 +67,18 @@ async function createTextNodes(text, fontSize, fonts) {
 }
 figma.ui.onmessage = async (msg) => {
     if (msg.type === 'init') {
-        const families = await collectFamilies();
+        // clientStorage : persistant à travers tous les fichiers Figma,
+        // propre à l'utilisateur et au plugin, local à la machine.
+        const [families, collections] = await Promise.all([
+            collectFamilies(),
+            figma.clientStorage.getAsync('collections')
+        ]);
         figma.ui.postMessage({ type: 'fonts', families });
+        figma.ui.postMessage({ type: 'collections', collections: collections || null });
+        return;
+    }
+    if (msg.type === 'save-collections') {
+        await figma.clientStorage.setAsync('collections', msg.collections);
         return;
     }
     if (msg.type === 'create-nodes') {

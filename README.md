@@ -11,6 +11,7 @@ Plugin Figma pour explorer et comparer des typographies. Tapez un texte (un nom 
 - **Filtres** : recherche par nom, catégories (Sans Serif, Serif, Monospace, Display & Script) et source (Figma Cloud vs Système), avec compteurs.
 - **Aperçu fidèle des polices cloud** : pour les familles Google Fonts populaires non installées localement, la feuille de style Google Fonts est injectée à la volée, uniquement pour les familles réellement visibles à l'écran.
 - **Insertion propre sur le canvas** : les blocs de texte sont créés avec le style par défaut de chaque famille (Regular si disponible), empilés verticalement, puis sélectionnés et cadrés dans le viewport. Une police indisponible n'interrompt pas le lot : elle est signalée à la fin.
+- **Favoris et projets** : une étoile sur chaque ligne pour les coups de cœur, et des collections nommées par client ou par marque via le bouton « Ajouter à la collection » (favoris, projet existant, ou nouveau projet nommé inline). Les collections apparaissent dans la sidebar : un clic filtre la liste sur leur contenu. Renommage au double-clic, suppression au survol. Persistance via `figma.clientStorage`, donc conservée d'un fichier Figma à l'autre.
 - **Thème clair et sombre** : l'interface suit automatiquement le thème de Figma.
 
 ## Installation
@@ -53,6 +54,7 @@ L'interface (`ui.html`) est autonome : HTML, CSS et JavaScript dans un seul fich
 
 - Seules les familles cloud présentes dans la liste interne `GOOGLE_FONTS` (~150 familles populaires) bénéficient d'un aperçu HTML fidèle ; les autres s'affichent avec la police de repli du système dans l'interface. L'insertion sur le canvas, elle, est toujours fidèle : c'est `figma.loadFontAsync` qui fait foi côté Figma.
 - La catégorisation (Serif, Mono…) est heuristique : une famille au nom atypique peut être mal classée.
+- Les favoris et projets sont stockés en local sur la machine (`figma.clientStorage`, 5 Mo par plugin) : ils ne sont ni synchronisés entre machines, ni partagés entre utilisateurs. Une police enregistrée sur un poste mais absente d'un autre apparaît grisée « Indisponible sur cette machine ».
 
 ## Licence
 
