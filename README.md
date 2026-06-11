@@ -52,7 +52,7 @@ The UI (`ui.html`) is self-contained: HTML, CSS and JavaScript in a single file,
 
 ## Known limitations
 
-- A cloud family that has no Google Fonts entry cannot be previewed in the UI: it falls back to the system font and gets an "Approximate preview" badge. Canvas insertion is always faithful though: `figma.loadFontAsync` is the source of truth on the Figma side.
+- A cloud family that has no Google Fonts entry cannot be previewed in the UI and silently falls back to the system font. Canvas insertion is always faithful though: `figma.loadFontAsync` is the source of truth on the Figma side.
 - Categorization (Serif, Mono…) is heuristic: an unusually named family may be misclassified.
 - Favorites and projects are stored locally on the machine (`figma.clientStorage`, 5 MB per plugin): they are not synced across machines nor shared between users. A font saved on one computer but missing on another shows up grayed out as "Not available on this machine".
 

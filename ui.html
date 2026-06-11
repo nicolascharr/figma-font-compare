@@ -594,7 +594,6 @@ async function fetchCss(url) {
 }
 
 const requestedPreviews = new Set();
-const failedPreviews = new Set();
 
 async function loadCloudPreview(family) {
   if (requestedPreviews.has(family)) return;
@@ -602,13 +601,10 @@ async function loadCloudPreview(family) {
 
   // Unknown families make the whole request fail, so one request per
   // family: first with the weight/italic axes, then the plain family.
+  // Families absent from Google Fonts silently keep the fallback font.
   let css = await fetchCss(googleFontsUrl(family, true));
   if (css === null) css = await fetchCss(googleFontsUrl(family, false));
-  if (css === null) {
-    failedPreviews.add(family);
-    markApproximatePreview(family);
-    return;
-  }
+  if (css === null) return;
 
   // Alias every @font-face onto the exact Figma family name, with
   // neutral weight/style so the preview element always matches it.
@@ -620,17 +616,6 @@ async function loadCloudPreview(family) {
   const style = document.createElement('style');
   style.textContent = aliased;
   document.head.appendChild(style);
-}
-
-function markApproximatePreview(family) {
-  document.querySelectorAll('.row').forEach(row => {
-    if (row.dataset.family === family && !row.querySelector('.badge.approx')) {
-      const badge = document.createElement('span');
-      badge.className = 'badge approx';
-      badge.textContent = 'Approximate preview';
-      row.querySelector('.meta').appendChild(badge);
-    }
-  });
 }
 
 /* ════════════════════════════════════════════════════
@@ -889,13 +874,6 @@ function buildRow(entry) {
     const badge = document.createElement('span');
     badge.className = 'badge';
     badge.textContent = 'Not available on this machine';
-    meta.appendChild(badge);
-  }
-
-  if (failedPreviews.has(entry.family)) {
-    const badge = document.createElement('span');
-    badge.className = 'badge approx';
-    badge.textContent = 'Approximate preview';
     meta.appendChild(badge);
   }
 
