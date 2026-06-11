@@ -1,10 +1,10 @@
-# <img src="icon.png" alt="" width="26" /> FontCompare
+# <img src="icon.png" alt="" width="26" /> Font Stack
 
 *Compare fonts side by side in Figma. System fonts + Google Fonts, with multi-select and one-click to canvas.*
 
 A Figma plugin to explore and compare typefaces. Type some text (a brand name, a tagline), preview it instantly in **every font available in Figma** (system fonts + cloud fonts), check the ones you like and insert them on the canvas in one click, neatly aligned.
 
-![FontCompare in action](screenshots/demo.gif)
+![Font Stack in action](screenshots/demo.gif)
 
 ## Features
 
@@ -20,7 +20,7 @@ A Figma plugin to explore and compare typefaces. Type some text (a brand name, a
 
 1. Clone this repository:
    ```sh
-   git clone https://github.com/nicolascharr/figma-font-compare.git
+   git clone https://github.com/nicolascharr/figma-font-stack.git
    ```
 2. In **Figma Desktop**: `Plugins → Development → Import plugin from manifest…`
 3. Select the `manifest.json` file from the repository.

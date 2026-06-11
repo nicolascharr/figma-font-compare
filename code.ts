@@ -1,4 +1,4 @@
-// FontCompare — Figma backend logic
+// Font Stack — Figma backend logic
 // Build with: npx tsc  (typings: @figma/plugin-typings)
 
 figma.showUI(__html__, { width: 780, height: 620, themeColors: true });
