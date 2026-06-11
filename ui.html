@@ -60,17 +60,6 @@
     border-bottom: 1px solid var(--border);
     flex-shrink: 0;
   }
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-  }
-  .brand img { display: block; border-radius: 5px; }
-
   .topbar input[type="text"] {
     flex: 1;
     height: 32px;
@@ -438,10 +427,6 @@
 <body>
 
   <header class="topbar">
-    <div class="brand">
-      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAA9CAYAAAAeYmHpAAAACXBIWXMAAAWJAAAFiQFtaJ36AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAABMJJREFUeAHtmk1T21YUhk9iFxubwcYf4DQOhELITGYy00433XbVdbvusv+i+/6S/obuuuqmu3aaDlMaWkIKg8EfYI9tsGsnue8NSox0rnSuZLKRnhmPjSxZenXu+RR3vvv2j9cUM+5SDElEx4VEdFxIRMeFRHRcSETHhViKTlNIJpMRTacj4/ep1CKVikWKynQ6pdF4TJPpK5oXoUX/c/AzNc7+ZL+r175Rr69p56E6Qegz3GSixA8vr6jX79N5t0cD9TksoS/povef8bta9Sv9ftokun+P5kI6laLlpbx+1Wtr+gacNFvU7JyTLaF8uj84o6ur7o1t2Wxh5gJz+r3Vplsjt5ilrfU6ffbkMWUWPrI6NpToLmPl+sefv/s8mQ71e38A36dbJbOwQE+2P6G8uglSQolutZ97tpVLj6hYWNefD49/1MIhGMJtaKgl2+l2dfCSAuE7mxtii1uLRtS+6L68sS2bKehXsfBA/93s/ELP9r5XfndI7Q5Z8eL4hP4+eEm/7e6pm3ciPg7Ct9YfiPa1Ft11CQaO2MLy+5OOxi3a3f+Bjk6GFBYEKhvhCHISa1uLbnW8S9sRjeWdTr/3LSzx4bCpVgaFBsJtlnqpsBy4j7VoLlUVrn0ZVMrbN76DcJVWI9Gx+IHc4mLgPlaiEbU9qeranx2W8mue46JYGgwjFCIcVqIvfPzZoVzaZo67/dRlg6Vo79J2i9aWnylUHFCdfQgk/i8WfTXqspae9WeHisrZbqJUZzmLwuNc4P9i0ZyV3f7swC3xKNWZJCID1OGSRkQsuu2TqtwgmM2mLhCmOgO1akUXHkEMLy/pqHFGEiJZ2iQ6nc4o4aue7TbVGYoMdFMPBW0aStfd/QNxPhe1lkhVk4l32eSXVo3HVMqPPDEAhtjaJF+++PQpSUFvDev2LJeQyNJcgwFfXsqtGY/J56qebVjiUXO2A6waNn+LLM0tbSzhU8PkxA8E12KBIgM/h7/jhRsAi0sHCoGikar6g1PPdgwS/nr+E9kCS2/ImiExbzusum440KBgtORHoGjOylFwqjPT7OzX35/pd4yHFlQwy6taul5bFUXwamlF77+7/6+v8ECf5lJVVCTVmTMIxJJFZA6yngMKmVq17LtPKEsjB8Onw4LqzGZgCJ9FWkIKk3BP+Xmj2TbeKF/RplS1vfklra3KUksmtU49V2XoVGc242GUl1LRKeUaK6qKMwU23+XNpSrA1dsmyiXvNr/qDL7MYTvs95ug+Itm/BmVFldvmyiX7rIWNVVnpotNp+b3BMr4S0hV7oEBMJWeHJnr6Fth4oqpTF4xNBcrwqbDwa/xMIo2papyaYckoGh4+vhti8ldr6k6g98iEM2C/FtzbQvCr1ozhhKu2kLEllgaF47c6lBRfr3H7GeqzjZUaL+vjp9e+7HtE4zzgLk5a2lutg2kS3tWMIBPc+L86nAENIi1FQyxL44bvvuwornZNuAmIlI4v5737AyCJS0mK7rViZaquJNyqQvMY3aGIuSocaqequyLemrWp7nZtk2q2js41A1AfmYGnc3gyabKCq74YludQSAe1A/UpGQ8/l/PxG376TvJvz7HhER0XEhEx4VEdFxIRMeFRHRcSETHhTcRogG5Kf6TsQAAAABJRU5ErkJggg==" alt="" width="20" height="20">
-      <span>FontCompare</span>
-    </div>
     <input type="text" id="sampleInput" placeholder="Type your text or brand name…" spellcheck="false">
     <div class="size-control">
       <label for="sizeSlider">Size</label>
