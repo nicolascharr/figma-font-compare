@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<style>
+  :root {
+    --bg: oklch(0.985 0.004 280);
+    --bg-panel: oklch(0.962 0.006 280);
+    --bg-hover: oklch(0.955 0.007 280);
+    --border: oklch(0.908 0.007 280);
+    --border-strong: oklch(0.84 0.01 280);
+    --text: oklch(0.27 0.014 280);
+    --text-dim: oklch(0.54 0.016 280);
+    --text-faint: oklch(0.66 0.014 280);
+    --accent: oklch(0.53 0.17 275);
+    --accent-hover: oklch(0.47 0.18 275);
+    --accent-soft: oklch(0.945 0.025 275);
+    --accent-text: oklch(0.985 0.005 275);
+    --ui-font: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    --preview-fallback: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    --preview-size: 36px;
+  }
+  .figma-dark {
+    --bg: oklch(0.235 0.01 280);
+    --bg-panel: oklch(0.265 0.011 280);
+    --bg-hover: oklch(0.295 0.012 280);
+    --border: oklch(0.33 0.012 280);
+    --border-strong: oklch(0.42 0.014 280);
+    --text: oklch(0.93 0.006 280);
+    --text-dim: oklch(0.68 0.012 280);
+    --text-faint: oklch(0.55 0.012 280);
+    --accent: oklch(0.66 0.15 275);
+    --accent-hover: oklch(0.72 0.14 275);
+    --accent-soft: oklch(0.32 0.05 275);
+    --accent-text: oklch(0.16 0.02 275);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { height: 100%; }
+  body {
+    font-family: var(--ui-font);
+    font-size: 11px;
+    color: var(--text);
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  button, input { font-family: inherit; font-size: inherit; color: inherit; }
+
+  /* ── Zone supérieure ─────────────────────────────── */
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .topbar input[type="text"] {
+    flex: 1;
+    height: 32px;
+    padding: 0 10px;
+    font-size: 13px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    outline: none;
+    transition: border-color 150ms ease-out;
+  }
+  .topbar input[type="text"]:hover { border-color: var(--border-strong); }
+  .topbar input[type="text"]:focus { border-color: var(--accent); }
+  .topbar input[type="text"]::placeholder { color: var(--text-faint); }
+
+  .size-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .size-control label { color: var(--text-dim); }
+  .size-control input[type="range"] {
+    width: 130px;
+    accent-color: var(--accent);
+  }
+  .size-control output {
+    width: 38px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-dim);
+  }
+
+  /* ── Zone centrale : sidebar + liste ─────────────── */
+  main {
+    flex: 1;
+    display: flex;
+    min-height: 0;
+  }
+
+  .sidebar {
+    width: 168px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border);
+    background: var(--bg-panel);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
+  }
+  .sidebar input[type="search"] {
+    width: 100%;
+    height: 28px;
+    padding: 0 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    outline: none;
+    transition: border-color 150ms ease-out;
+  }
+  .sidebar input[type="search"]:focus { border-color: var(--accent); }
+  .sidebar input[type="search"]::placeholder { color: var(--text-faint); }
+
+  .filter-group h3 {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-faint);
+    margin-bottom: 6px;
+  }
+  .filter-group button {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 5px 8px;
+    background: none;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    color: var(--text-dim);
+    transition: background 150ms ease-out, color 150ms ease-out;
+  }
+  .filter-group button:hover { background: var(--bg-hover); color: var(--text); }
+  .filter-group button.active {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .filter-group button .count {
+    font-variant-numeric: tabular-nums;
+    font-weight: 400;
+    color: var(--text-faint);
+  }
+  .filter-group button.active .count { color: var(--accent); }
+
+  /* ── Liste de prévisualisation ───────────────────── */
+  .list {
+    flex: 1;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 150ms ease-out;
+  }
+  .row:hover { background: var(--bg-hover); }
+  .row.checked { background: var(--accent-soft); }
+
+  .row input[type="checkbox"] {
+    margin-top: 2px;
+    width: 14px;
+    height: 14px;
+    accent-color: var(--accent);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .row .content { flex: 1; min-width: 0; }
+  .row .meta {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .row .meta .name { font-weight: 600; font-size: 11px; }
+  .row .meta .styles { color: var(--text-faint); }
+  .row .meta .badge {
+    font-size: 9px;
+    padding: 1px 5px;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    color: var(--text-dim);
+  }
+  .row .preview {
+    font-size: var(--preview-size);
+    line-height: 1.25;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Squelettes de chargement */
+  .skeleton {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .skeleton .bar {
+    height: 10px;
+    width: 110px;
+    border-radius: 4px;
+    background: var(--bg-panel);
+    margin-bottom: 12px;
+  }
+  .skeleton .bar.big {
+    height: 26px;
+    width: 60%;
+    margin-bottom: 0;
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes pulse { 50% { opacity: 0.45; } }
+
+  .empty {
+    padding: 48px 24px;
+    text-align: center;
+    color: var(--text-dim);
+  }
+  .empty button {
+    margin-top: 10px;
+    padding: 5px 12px;
+    background: none;
+    border: 1px solid var(--border-strong);
+    border-radius: 5px;
+    cursor: pointer;
+    color: var(--text);
+  }
+  .empty button:hover { background: var(--bg-hover); }
+
+  .sentinel { height: 1px; }
+
+  /* ── Pied de page ────────────────────────────────── */
+  footer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+    background: var(--bg);
+  }
+  footer .summary { flex: 1; color: var(--text-dim); }
+  footer .clear {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  footer .clear:hover { color: var(--text); }
+  footer .clear[hidden] { display: none; }
+
+  #addBtn {
+    height: 32px;
+    padding: 0 16px;
+    background: var(--accent);
+    color: var(--accent-text);
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 150ms ease-out;
+  }
+  #addBtn:hover:not(:disabled) { background: var(--accent-hover); }
+  #addBtn:disabled { opacity: 0.45; cursor: default; }
+</style>
+</head>
+<body>
+
+  <header class="topbar">
+    <input type="text" id="sampleInput" placeholder="Tapez votre texte ou nom de marque…" spellcheck="false">
+    <div class="size-control">
+      <label for="sizeSlider">Taille</label>
+      <input type="range" id="sizeSlider" min="12" max="96" step="1" value="36">
+      <output id="sizeValue">36 px</output>
+    </div>
+  </header>
+
+  <main>
+    <aside class="sidebar">
+      <input type="search" id="searchInput" placeholder="Rechercher une police…">
+
+      <div class="filter-group" id="categoryGroup">
+        <h3>Catégories</h3>
+        <button data-category="all" class="active">Toutes <span class="count"></span></button>
+        <button data-category="sans">Sans Serif <span class="count"></span></button>
+        <button data-category="serif">Serif <span class="count"></span></button>
+        <button data-category="mono">Monospace <span class="count"></span></button>
+        <button data-category="display">Display &amp; Script <span class="count"></span></button>
+      </div>
+
+      <div class="filter-group" id="sourceGroup">
+        <h3>Source</h3>
+        <button data-source="all" class="active">Toutes <span class="count"></span></button>
+        <button data-source="google">Figma Cloud <span class="count"></span></button>
+        <button data-source="system">Système <span class="count"></span></button>
+      </div>
+    </aside>
+
+    <section class="list" id="list" aria-label="Aperçu des polices"></section>
+  </main>
+
+  <footer>
+    <span class="summary" id="summary">Chargement des polices…</span>
+    <button class="clear" id="clearBtn" hidden>Tout décocher</button>
+    <button id="addBtn" disabled>Ajouter au Canvas</button>
+  </footer>
+
+<script>
+'use strict';
+
+/* ════════════════════════════════════════════════════
+   Classification heuristique des polices.
+   L'API Figma ne fournit pas de catégorie : on classe
+   par mots-clés sur le nom de famille.
+   ════════════════════════════════════════════════════ */
+
+const MONO_KEYWORDS = [
+  'mono', 'code', 'courier', 'consol', 'menlo', 'typewriter', 'terminal',
+  'inconsolata', 'fixed', 'jetbrains', 'hack', 'fira code', 'space grotesk mono',
+  'andale', 'letter gothic', 'ocr', 'vt323', 'press start', 'monaco'
+];
+
+const SERIF_KEYWORDS = [
+  'times', 'georgia', 'garamond', 'baskerville', 'bodoni', 'didot', 'caslon',
+  'palatino', 'antiqua', 'cambria', 'charter', 'clarendon', 'rockwell',
+  'playfair', 'merriweather', 'lora', 'crimson', 'cormorant', 'spectral',
+  'literata', 'slab', 'zilla', 'bitter', 'domine', 'vollkorn', 'alegreya',
+  'cardo', 'neuton', 'arvo', 'frank ruhl', 'old standard', 'prata', 'hoefler',
+  'minion', 'sabon', 'jenson', 'utopia', 'freight', 'tinos', 'gelasio',
+  'newsreader', 'fraunces', 'libre baskerville', 'noticia', 'petrona'
+];
+
+const DISPLAY_KEYWORDS = [
+  'script', 'hand', 'brush', 'comic', 'display', 'decorative', 'marker',
+  'chalk', 'graffiti', 'caveat', 'pacifico', 'lobster', 'dancing', 'satisfy',
+  'sacramento', 'great vibes', 'cookie', 'courgette', 'kalam', 'indie flower',
+  'shadows into light', 'amatic', 'bangers', 'fredoka', 'righteous', 'abril',
+  'alfa slab', 'bungee', 'monoton', 'creepster', 'papyrus', 'impact',
+  'cursive', 'calligra', 'signature', 'tangerine', 'yellowtail', 'allura',
+  'parisienne', 'permanent marker', 'rock salt', 'homemade', 'patrick hand',
+  'gloria', 'luckiest', 'chewy', 'sigmar', 'titan one', 'rubik mono'
+];
+
+function classify(family) {
+  const f = family.toLowerCase();
+  if (MONO_KEYWORDS.some(k => f.includes(k))) return 'mono';
+  if (DISPLAY_KEYWORDS.some(k => f.includes(k))) return 'display';
+  if (f.includes('serif') && !f.includes('sans')) return 'serif';
+  if (f.includes('sans')) return 'sans';
+  if (SERIF_KEYWORDS.some(k => f.includes(k))) return 'serif';
+  return 'sans';
+}
+
+/* ════════════════════════════════════════════════════
+   Polices Google Fonts populaires : pour celles-ci, on
+   injecte dynamiquement la feuille de style Google Fonts
+   afin que l'aperçu HTML fonctionne même si la police
+   n'est pas installée localement (police cloud Figma).
+   ════════════════════════════════════════════════════ */
+
+const GOOGLE_FONTS = new Set([
+  'Inter', 'Roboto', 'Open Sans', 'Lato', 'Montserrat', 'Poppins', 'Raleway',
+  'Oswald', 'Merriweather', 'Playfair Display', 'Nunito', 'Nunito Sans',
+  'Rubik', 'Work Sans', 'Source Sans Pro', 'Source Sans 3', 'Source Serif Pro',
+  'Source Serif 4', 'Source Code Pro', 'Noto Sans', 'Noto Serif', 'PT Sans',
+  'PT Serif', 'PT Mono', 'Ubuntu', 'Ubuntu Mono', 'Mukta', 'Quicksand',
+  'Barlow', 'Barlow Condensed', 'Heebo', 'Karla', 'Manrope', 'Josefin Sans',
+  'Libre Franklin', 'Libre Baskerville', 'Libre Caslon Text', 'Fira Sans',
+  'Fira Code', 'Inconsolata', 'JetBrains Mono', 'Space Mono', 'Space Grotesk',
+  'IBM Plex Sans', 'IBM Plex Serif', 'IBM Plex Mono', 'Roboto Slab',
+  'Roboto Mono', 'Roboto Condensed', 'Lora', 'Crimson Text', 'Crimson Pro',
+  'Cormorant', 'Cormorant Garamond', 'EB Garamond', 'Spectral', 'Literata',
+  'Bitter', 'Domine', 'Vollkorn', 'Alegreya', 'Alegreya Sans', 'Cardo',
+  'Neuton', 'Arvo', 'Zilla Slab', 'Frank Ruhl Libre', 'Old Standard TT',
+  'Prata', 'Abril Fatface', 'Alfa Slab One', 'Bungee', 'Monoton', 'Bangers',
+  'Fredoka', 'Righteous', 'Lobster', 'Pacifico', 'Caveat', 'Dancing Script',
+  'Satisfy', 'Sacramento', 'Great Vibes', 'Cookie', 'Courgette', 'Kalam',
+  'Indie Flower', 'Shadows Into Light', 'Amatic SC', 'Permanent Marker',
+  'Rock Salt', 'Patrick Hand', 'Gloria Hallelujah', 'Luckiest Guy', 'Chewy',
+  'Tangerine', 'Yellowtail', 'Allura', 'Parisienne', 'Press Start 2P',
+  'VT323', 'DM Sans', 'DM Serif Display', 'DM Serif Text', 'DM Mono',
+  'Plus Jakarta Sans', 'Sora', 'Outfit', 'Epilogue', 'Lexend', 'Urbanist',
+  'Figtree', 'Onest', 'Schibsted Grotesk', 'Instrument Sans', 'Instrument Serif',
+  'Bricolage Grotesque', 'Fraunces', 'Newsreader', 'Petrona', 'Gelasio',
+  'Tinos', 'Archivo', 'Archivo Black', 'Anton', 'Bebas Neue', 'Exo 2',
+  'Cabin', 'Catamaran', 'Chivo', 'Cousine', 'Hind', 'Jost', 'Kanit',
+  'Mulish', 'Overpass', 'Prompt', 'Public Sans', 'Red Hat Display',
+  'Red Hat Text', 'Sarabun', 'Teko', 'Titillium Web', 'Varela Round',
+  'Yanone Kaffeesatz', 'Assistant', 'Asap', 'Signika', 'Maven Pro',
+  'M PLUS Rounded 1c', 'Comfortaa', 'Dosis', 'Questrial', 'Oxygen',
+  'Noticia Text', 'Cinzel', 'Marcellus', 'Forum', 'Italiana', 'Julius Sans One'
+]);
+
+/* ── Injection paresseuse des feuilles Google Fonts ── */
+const requestedGoogleFonts = new Set();
+let pendingGoogleFonts = [];
+let flushTimer = null;
+
+function queueGoogleFont(family) {
+  if (!GOOGLE_FONTS.has(family) || requestedGoogleFonts.has(family)) return;
+  requestedGoogleFonts.add(family);
+  pendingGoogleFonts.push(family);
+  if (!flushTimer) flushTimer = setTimeout(flushGoogleFonts, 250);
+}
+
+function flushGoogleFonts() {
+  flushTimer = null;
+  if (pendingGoogleFonts.length === 0) return;
+  const params = pendingGoogleFonts
+    .map(f => 'family=' + encodeURIComponent(f).replace(/%20/g, '+'))
+    .join('&');
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = 'https://fonts.googleapis.com/css2?' + params + '&display=swap';
+  document.head.appendChild(link);
+  pendingGoogleFonts = [];
+}
+
+/* ════════════════════════════════════════════════════
+   État de l'application
+   ════════════════════════════════════════════════════ */
+
+const BATCH_SIZE = 50;
+
+const state = {
+  allFamilies: [],          // [{ family, styles, category, isGoogle }]
+  filtered: [],
+  renderedCount: 0,
+  selected: new Map(),      // family -> style par défaut
+  query: '',
+  category: 'all',
+  source: 'all',
+  sampleText: '',
+  fontSize: 36,
+  creating: false
+};
+
+const listEl = document.getElementById('list');
+const sampleInput = document.getElementById('sampleInput');
+const searchInput = document.getElementById('searchInput');
+const sizeSlider = document.getElementById('sizeSlider');
+const sizeValue = document.getElementById('sizeValue');
+const summaryEl = document.getElementById('summary');
+const clearBtn = document.getElementById('clearBtn');
+const addBtn = document.getElementById('addBtn');
+
+/* Style par défaut d'une famille : Regular si présent, sinon le plus proche. */
+function pickDefaultStyle(styles) {
+  const preferred = ['regular', 'normal', 'book', 'roman', 'medium', '400'];
+  for (const p of preferred) {
+    const hit = styles.find(s => s.toLowerCase() === p);
+    if (hit) return hit;
+  }
+  return styles[0];
+}
+
+/* ── Squelettes pendant le chargement initial ── */
+function showSkeletons() {
+  listEl.innerHTML = '';
+  for (let i = 0; i < 8; i++) {
+    const sk = document.createElement('div');
+    sk.className = 'skeleton';
+    sk.innerHTML = '<div class="bar"></div><div class="bar big"></div>';
+    listEl.appendChild(sk);
+  }
+}
+
+/* ── Filtrage ── */
+function applyFilters() {
+  const q = state.query.trim().toLowerCase();
+  state.filtered = state.allFamilies.filter(f => {
+    if (q && !f.family.toLowerCase().includes(q)) return false;
+    if (state.category !== 'all' && f.category !== state.category) return false;
+    if (state.source === 'google' && !f.isGoogle) return false;
+    if (state.source === 'system' && f.isGoogle) return false;
+    return true;
+  });
+  renderFromScratch();
+  updateSummary();
+}
+
+/* ── Rendu par lots (lazy loading au défilement) ── */
+let sentinel = null;
+const sentinelObserver = new IntersectionObserver(entries => {
+  if (entries[0].isIntersecting) renderNextBatch();
+}, { root: listEl, rootMargin: '400px' });
+
+const visibilityObserver = new IntersectionObserver(entries => {
+  for (const entry of entries) {
+    if (entry.isIntersecting) {
+      queueGoogleFont(entry.target.dataset.family);
+      visibilityObserver.unobserve(entry.target);
+    }
+  }
+}, { root: listEl, rootMargin: '200px' });
+
+function renderFromScratch() {
+  sentinelObserver.disconnect();
+  visibilityObserver.disconnect();
+  listEl.innerHTML = '';
+  state.renderedCount = 0;
+  listEl.scrollTop = 0;
+
+  if (state.filtered.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'empty';
+    empty.innerHTML = '<p>Aucune police ne correspond à ces filtres.</p>';
+    const reset = document.createElement('button');
+    reset.textContent = 'Réinitialiser les filtres';
+    reset.addEventListener('click', resetFilters);
+    empty.appendChild(reset);
+    listEl.appendChild(empty);
+    return;
+  }
+
+  sentinel = document.createElement('div');
+  sentinel.className = 'sentinel';
+  listEl.appendChild(sentinel);
+  renderNextBatch();
+  sentinelObserver.observe(sentinel);
+}
+
+function renderNextBatch() {
+  const next = state.filtered.slice(state.renderedCount, state.renderedCount + BATCH_SIZE);
+  if (next.length === 0) return;
+
+  const fragment = document.createDocumentFragment();
+  for (const entry of next) fragment.appendChild(buildRow(entry));
+  listEl.insertBefore(fragment, sentinel);
+  state.renderedCount += next.length;
+}
+
+function buildRow(entry) {
+  const row = document.createElement('label');
+  row.className = 'row';
+  row.dataset.family = entry.family;
+  if (state.selected.has(entry.family)) row.classList.add('checked');
+
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.checked = state.selected.has(entry.family);
+  checkbox.addEventListener('change', () => {
+    if (checkbox.checked) {
+      state.selected.set(entry.family, pickDefaultStyle(entry.styles));
+      row.classList.add('checked');
+    } else {
+      state.selected.delete(entry.family);
+      row.classList.remove('checked');
+    }
+    updateSummary();
+  });
+
+  const content = document.createElement('div');
+  content.className = 'content';
+
+  const meta = document.createElement('div');
+  meta.className = 'meta';
+
+  const name = document.createElement('span');
+  name.className = 'name';
+  name.textContent = entry.family;
+  meta.appendChild(name);
+
+  const styles = document.createElement('span');
+  styles.className = 'styles';
+  styles.textContent = entry.styles.length + ' style' + (entry.styles.length > 1 ? 's' : '');
+  meta.appendChild(styles);
+
+  if (entry.isGoogle) {
+    const badge = document.createElement('span');
+    badge.className = 'badge';
+    badge.textContent = 'Cloud';
+    meta.appendChild(badge);
+  }
+
+  const preview = document.createElement('div');
+  preview.className = 'preview';
+  preview.style.fontFamily = "'" + entry.family.replace(/'/g, "\\'") + "', var(--preview-fallback)";
+  preview.textContent = state.sampleText || entry.family;
+
+  content.appendChild(meta);
+  content.appendChild(preview);
+  row.appendChild(checkbox);
+  row.appendChild(content);
+
+  visibilityObserver.observe(row);
+  return row;
+}
+
+/* ── Pied de page ── */
+function updateSummary() {
+  const n = state.selected.size;
+  summaryEl.textContent = state.filtered.length + ' police' + (state.filtered.length > 1 ? 's' : '')
+    + (n > 0 ? ' · ' + n + ' sélectionnée' + (n > 1 ? 's' : '') : '');
+  clearBtn.hidden = n === 0;
+  addBtn.disabled = n === 0 || state.creating;
+  addBtn.textContent = n === 0
+    ? 'Ajouter au Canvas'
+    : 'Ajouter les ' + n + ' police' + (n > 1 ? 's' : '') + ' sélectionnées au Canvas';
+  if (n === 1) addBtn.textContent = 'Ajouter la police sélectionnée au Canvas';
+}
+
+function resetFilters() {
+  state.query = '';
+  state.category = 'all';
+  state.source = 'all';
+  searchInput.value = '';
+  syncFilterButtons();
+  applyFilters();
+}
+
+/* ── Compteurs et boutons de filtres ── */
+function syncFilterButtons() {
+  document.querySelectorAll('#categoryGroup button').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.category === state.category);
+  });
+  document.querySelectorAll('#sourceGroup button').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.source === state.source);
+  });
+}
+
+function updateFilterCounts() {
+  const counts = { all: state.allFamilies.length, sans: 0, serif: 0, mono: 0, display: 0, google: 0, system: 0 };
+  for (const f of state.allFamilies) {
+    counts[f.category]++;
+    counts[f.isGoogle ? 'google' : 'system']++;
+  }
+  document.querySelectorAll('#categoryGroup button').forEach(btn => {
+    btn.querySelector('.count').textContent = counts[btn.dataset.category];
+  });
+  document.querySelectorAll('#sourceGroup button').forEach(btn => {
+    const key = btn.dataset.source === 'all' ? 'all' : btn.dataset.source;
+    btn.querySelector('.count').textContent = counts[key];
+  });
+}
+
+/* ════════════════════════════════════════════════════
+   Événements
+   ════════════════════════════════════════════════════ */
+
+sampleInput.addEventListener('input', () => {
+  state.sampleText = sampleInput.value;
+  document.querySelectorAll('.row').forEach(row => {
+    row.querySelector('.preview').textContent = state.sampleText || row.dataset.family;
+  });
+});
+
+sizeSlider.addEventListener('input', () => {
+  state.fontSize = Number(sizeSlider.value);
+  sizeValue.textContent = state.fontSize + ' px';
+  document.documentElement.style.setProperty('--preview-size', state.fontSize + 'px');
+});
+
+let searchDebounce = null;
+searchInput.addEventListener('input', () => {
+  clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(() => {
+    state.query = searchInput.value;
+    applyFilters();
+  }, 120);
+});
+
+document.getElementById('categoryGroup').addEventListener('click', e => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  state.category = btn.dataset.category;
+  syncFilterButtons();
+  applyFilters();
+});
+
+document.getElementById('sourceGroup').addEventListener('click', e => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  state.source = btn.dataset.source;
+  syncFilterButtons();
+  applyFilters();
+});
+
+clearBtn.addEventListener('click', () => {
+  state.selected.clear();
+  document.querySelectorAll('.row.checked').forEach(row => {
+    row.classList.remove('checked');
+    row.querySelector('input[type="checkbox"]').checked = false;
+  });
+  updateSummary();
+});
+
+addBtn.addEventListener('click', () => {
+  if (state.selected.size === 0 || state.creating) return;
+  state.creating = true;
+  addBtn.disabled = true;
+  addBtn.textContent = 'Ajout en cours…';
+  const fonts = [];
+  state.selected.forEach((style, family) => fonts.push({ family, style }));
+  parent.postMessage({
+    pluginMessage: {
+      type: 'create-nodes',
+      text: state.sampleText.trim(),
+      fontSize: state.fontSize,
+      fonts
+    }
+  }, '*');
+});
+
+/* ── Messages du backend (code.ts) ── */
+window.onmessage = event => {
+  const msg = event.data.pluginMessage;
+  if (!msg) return;
+
+  if (msg.type === 'fonts') {
+    state.allFamilies = msg.families.map(f => ({
+      family: f.family,
+      styles: f.styles,
+      category: classify(f.family),
+      isGoogle: GOOGLE_FONTS.has(f.family)
+    }));
+    updateFilterCounts();
+    applyFilters();
+    return;
+  }
+
+  if (msg.type === 'progress') {
+    addBtn.textContent = 'Ajout… ' + msg.done + '/' + msg.total;
+    return;
+  }
+
+  if (msg.type === 'create-done') {
+    state.creating = false;
+    updateSummary();
+  }
+};
+
+/* ── Démarrage ── */
+showSkeletons();
+parent.postMessage({ pluginMessage: { type: 'init' } }, '*');
+</script>
+</body>
+</html>
