@@ -1,4 +1,4 @@
-# FontCompare
+# <img src="icon.png" alt="" width="26" /> FontCompare
 
 *Compare fonts side by side in Figma. System fonts + Google Fonts, with multi-select and one-click to canvas.*
 
