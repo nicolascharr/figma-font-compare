@@ -1,9 +1,9 @@
 "use strict";
-// FontCompare — logique backend Figma
-// Compile avec : npx tsc  (typings : @figma/plugin-typings)
+// FontCompare — Figma backend logic
+// Build with: npx tsc  (typings: @figma/plugin-typings)
 figma.showUI(__html__, { width: 780, height: 620, themeColors: true });
-// Regroupe la liste plate renvoyée par listAvailableFontsAsync
-// (un Font par couple famille/style) en familles avec leurs styles.
+// Groups the flat list returned by listAvailableFontsAsync
+// (one Font per family/style pair) into families with their styles.
 async function collectFamilies() {
     const fonts = await figma.listAvailableFontsAsync();
     const byFamily = new Map();
@@ -40,8 +40,8 @@ async function createTextNodes(text, fontSize, fonts) {
             continue;
         }
         const node = figma.createText();
-        // fontName d'abord : characters/fontSize exigent que la police COURANTE
-        // du nœud soit chargée, et on vient justement de charger celle-ci.
+        // fontName first: characters/fontSize require the node's CURRENT font
+        // to be loaded, and that is precisely the one just loaded above.
         node.fontName = fontName;
         node.characters = text || fontName.family;
         node.fontSize = fontSize;
@@ -58,17 +58,17 @@ async function createTextNodes(text, fontSize, fonts) {
         figma.viewport.scrollAndZoomIntoView(created);
     }
     if (failed.length === 0) {
-        figma.notify(`✓ ${created.length} police${created.length > 1 ? 's' : ''} ajoutée${created.length > 1 ? 's' : ''} au canvas`);
+        figma.notify(`✓ ${created.length} font${created.length > 1 ? 's' : ''} added to canvas`);
     }
     else {
-        figma.notify(`${created.length} ajoutée(s) · ${failed.length} introuvable(s) : ${failed.slice(0, 3).join(', ')}${failed.length > 3 ? '…' : ''}`, { error: true, timeout: 5000 });
+        figma.notify(`${created.length} added · ${failed.length} unavailable: ${failed.slice(0, 3).join(', ')}${failed.length > 3 ? '…' : ''}`, { error: true, timeout: 5000 });
     }
     figma.ui.postMessage({ type: 'create-done', created: created.length, failed: failed.length });
 }
 figma.ui.onmessage = async (msg) => {
     if (msg.type === 'init') {
-        // clientStorage : persistant à travers tous les fichiers Figma,
-        // propre à l'utilisateur et au plugin, local à la machine.
+        // clientStorage: persists across all Figma files, scoped to the
+        // user and the plugin, local to the machine.
         const [families, collections] = await Promise.all([
             collectFamilies(),
             figma.clientStorage.getAsync('collections')
@@ -83,7 +83,7 @@ figma.ui.onmessage = async (msg) => {
     }
     if (msg.type === 'create-nodes') {
         if (msg.fonts.length === 0) {
-            figma.notify('Aucune police sélectionnée', { error: true });
+            figma.notify('No fonts selected', { error: true });
             return;
         }
         await createTextNodes(msg.text, msg.fontSize, msg.fonts);

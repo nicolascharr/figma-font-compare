@@ -2,60 +2,60 @@
 
 *Compare fonts side by side in Figma. System fonts + Google Fonts, with multi-select and one-click to canvas.*
 
-Plugin Figma pour explorer et comparer des typographies. Tapez un texte (un nom de marque, un slogan), prévisualisez-le instantanément avec **toutes les polices disponibles dans Figma** (polices système + polices cloud), cochez celles qui vous plaisent et insérez-les en un clic sur le canvas, proprement alignées.
+A Figma plugin to explore and compare typefaces. Type some text (a brand name, a tagline), preview it instantly in **every font available in Figma** (system fonts + cloud fonts), check the ones you like and insert them on the canvas in one click, neatly aligned.
 
-## Fonctionnalités
+## Features
 
-- **Aperçu en direct** : le texte saisi s'affiche dans chaque police, à la taille choisie via le curseur (12–96 px). Champ vide ? L'aperçu affiche le nom de la famille, comme sur Google Fonts.
-- **Liste fluide, même avec 3000 polices** : rendu par lots de 50 au défilement (lazy loading via `IntersectionObserver`), aucune saccade.
-- **Filtres** : recherche par nom, catégories (Sans Serif, Serif, Monospace, Display & Script) et source (Figma Cloud vs Système), avec compteurs.
-- **Aperçu fidèle des polices cloud** : pour les familles Google Fonts populaires non installées localement, la feuille de style Google Fonts est injectée à la volée, uniquement pour les familles réellement visibles à l'écran.
-- **Insertion propre sur le canvas** : les blocs de texte sont créés avec le style par défaut de chaque famille (Regular si disponible), empilés verticalement, puis sélectionnés et cadrés dans le viewport. Une police indisponible n'interrompt pas le lot : elle est signalée à la fin.
-- **Favoris et projets** : une étoile sur chaque ligne pour les coups de cœur, et des collections nommées par client ou par marque via le bouton « Ajouter à la collection » (favoris, projet existant, ou nouveau projet nommé inline). Les collections apparaissent dans la sidebar : un clic filtre la liste sur leur contenu. Renommage au double-clic, suppression au survol. Persistance via `figma.clientStorage`, donc conservée d'un fichier Figma à l'autre.
-- **Thème clair et sombre** : l'interface suit automatiquement le thème de Figma.
+- **Live preview**: the text you type renders in every font, at the size set with the slider (12–96 px). Empty field? The preview falls back to the family name, Google Fonts style.
+- **Smooth list, even with 3,000 fonts**: rows render in batches of 50 as you scroll (lazy loading via `IntersectionObserver`), no jank.
+- **Filters**: search by name, categories (Sans Serif, Serif, Monospace, Display & Script) and source (Figma Cloud vs System), with counters.
+- **Faithful preview of cloud fonts**: for popular Google Fonts families not installed locally, the Google Fonts stylesheet is injected on the fly, only for families actually visible on screen.
+- **Clean canvas insertion**: text blocks are created with each family's default style (Regular when available), stacked vertically, then selected and framed in the viewport. An unavailable font doesn't interrupt the batch: it's reported at the end.
+- **Favorites and projects**: a star on each row for quick keepers, plus named collections per client or brand through the "Add to collection" button (favorites, an existing project, or a new project named inline). Collections live in the sidebar: clicking one filters the list to its content. Double-click to rename, hover to delete. Persisted with `figma.clientStorage`, so they carry over from one Figma file to another.
+- **Light and dark theme**: the UI follows Figma's theme automatically.
 
 ## Installation
 
-1. Clonez ce dépôt :
+1. Clone this repository:
    ```sh
    git clone https://github.com/nicolascharr/figma-font-compare.git
    ```
-2. Dans **Figma Desktop** : `Plugins → Development → Import plugin from manifest…`
-3. Sélectionnez le fichier `manifest.json` du dépôt.
+2. In **Figma Desktop**: `Plugins → Development → Import plugin from manifest…`
+3. Select the `manifest.json` file from the repository.
 
-Le code compilé (`code.js`) est versionné : aucune étape de build n'est nécessaire pour utiliser le plugin.
+The compiled code (`code.js`) is committed: no build step is required to use the plugin.
 
-## Développement
+## Development
 
-Le backend est écrit en TypeScript (`code.ts`) avec les typings officiels [`@figma/plugin-typings`](https://www.npmjs.com/package/@figma/plugin-typings).
+The backend is written in TypeScript (`code.ts`) with the official [`@figma/plugin-typings`](https://www.npmjs.com/package/@figma/plugin-typings).
 
 ```sh
 npm install
-npx tsc --watch   # recompile code.ts → code.js à chaque modification
+npx tsc --watch   # recompiles code.ts → code.js on every change
 ```
 
-L'interface (`ui.html`) est autonome : HTML, CSS et JavaScript dans un seul fichier, sans dépendance ni bundler.
+The UI (`ui.html`) is self-contained: HTML, CSS and JavaScript in a single file, no dependencies, no bundler.
 
-## Fonctionnement technique
+## How it works
 
 ```
 ┌──────────────┐  init / create-nodes   ┌─────────────────┐
 │   ui.html    │ ─────────────────────▶ │    code.ts      │
-│  (iframe UI) │ ◀───────────────────── │ (sandbox Figma) │
+│  (iframe UI) │ ◀───────────────────── │ (Figma sandbox) │
 └──────────────┘  fonts / progress /    └─────────────────┘
                   create-done
 ```
 
-- **`code.ts`** interroge `figma.listAvailableFontsAsync()`, regroupe les couples famille/style par famille et les envoie à l'interface. À l'insertion, il appelle `await figma.loadFontAsync()` pour chaque police cochée **avant** de créer le `TextNode` (en définissant `fontName` avant `characters`, comme l'exige l'API), puis positionne les nœuds verticalement.
-- **`ui.html`** classe les familles par heuristique de mots-clés (l'API Figma ne fournit pas de catégorie), filtre, et rend la liste par lots. Les stylesheets Google Fonts sont demandées par paquets groupés (debounce 250 ms) pour les seules familles cloud visibles.
-- **`manifest.json`** utilise le format actuel : `documentAccess: "dynamic-page"` et `networkAccess` restreint à `fonts.googleapis.com` / `fonts.gstatic.com`.
+- **`code.ts`** queries `figma.listAvailableFontsAsync()`, groups family/style pairs by family and sends them to the UI. On insertion, it calls `await figma.loadFontAsync()` for each checked font **before** creating the `TextNode` (setting `fontName` before `characters`, as the API requires), then stacks the nodes vertically.
+- **`ui.html`** classifies families with a keyword heuristic (the Figma API provides no category), filters, and renders the list in batches. Google Fonts stylesheets are requested in grouped batches (250 ms debounce) for visible cloud families only.
+- **`manifest.json`** uses the current format: `documentAccess: "dynamic-page"` and `networkAccess` restricted to `fonts.googleapis.com` / `fonts.gstatic.com`.
 
-## Limites connues
+## Known limitations
 
-- Seules les familles cloud présentes dans la liste interne `GOOGLE_FONTS` (~150 familles populaires) bénéficient d'un aperçu HTML fidèle ; les autres s'affichent avec la police de repli du système dans l'interface. L'insertion sur le canvas, elle, est toujours fidèle : c'est `figma.loadFontAsync` qui fait foi côté Figma.
-- La catégorisation (Serif, Mono…) est heuristique : une famille au nom atypique peut être mal classée.
-- Les favoris et projets sont stockés en local sur la machine (`figma.clientStorage`, 5 Mo par plugin) : ils ne sont ni synchronisés entre machines, ni partagés entre utilisateurs. Une police enregistrée sur un poste mais absente d'un autre apparaît grisée « Indisponible sur cette machine ».
+- Only cloud families present in the internal `GOOGLE_FONTS` list (~150 popular families) get a faithful HTML preview; the others fall back to the system font in the UI. Canvas insertion is always faithful though: `figma.loadFontAsync` is the source of truth on the Figma side.
+- Categorization (Serif, Mono…) is heuristic: an unusually named family may be misclassified.
+- Favorites and projects are stored locally on the machine (`figma.clientStorage`, 5 MB per plugin): they are not synced across machines nor shared between users. A font saved on one computer but missing on another shows up grayed out as "Not available on this machine".
 
-## Licence
+## License
 
 [MIT](LICENSE)

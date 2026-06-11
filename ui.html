@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <style>
@@ -51,7 +51,7 @@
 
   button, input { font-family: inherit; font-size: inherit; color: inherit; }
 
-  /* ── Zone supérieure ─────────────────────────────── */
+  /* ── Top bar ─────────────────────────────────────── */
   .topbar {
     display: flex;
     align-items: center;
@@ -93,7 +93,7 @@
     color: var(--text-dim);
   }
 
-  /* ── Zone centrale : sidebar + liste ─────────────── */
+  /* ── Main area: sidebar + list ───────────────────── */
   main {
     flex: 1;
     display: flex;
@@ -186,7 +186,7 @@
     outline: none;
   }
 
-  /* ── Liste de prévisualisation ───────────────────── */
+  /* ── Preview list ────────────────────────────────── */
   .list-pane {
     flex: 1;
     display: flex;
@@ -292,7 +292,7 @@
   .row .remove:hover { color: var(--text); background: var(--bg-hover); }
   .row.unavailable { opacity: 0.55; }
 
-  /* Squelettes de chargement */
+  /* Loading skeletons */
   .skeleton {
     padding: 14px 16px;
     border-bottom: 1px solid var(--border);
@@ -330,7 +330,7 @@
 
   .sentinel { height: 1px; }
 
-  /* ── Pied de page ────────────────────────────────── */
+  /* ── Footer ──────────────────────────────────────── */
   footer {
     display: flex;
     align-items: center;
@@ -427,9 +427,9 @@
 <body>
 
   <header class="topbar">
-    <input type="text" id="sampleInput" placeholder="Tapez votre texte ou nom de marque…" spellcheck="false">
+    <input type="text" id="sampleInput" placeholder="Type your text or brand name…" spellcheck="false">
     <div class="size-control">
-      <label for="sizeSlider">Taille</label>
+      <label for="sizeSlider">Size</label>
       <input type="range" id="sizeSlider" min="12" max="96" step="1" value="36">
       <output id="sizeValue">36 px</output>
     </div>
@@ -437,11 +437,11 @@
 
   <main>
     <aside class="sidebar">
-      <input type="search" id="searchInput" placeholder="Rechercher une police…">
+      <input type="search" id="searchInput" placeholder="Search fonts…">
 
       <div class="filter-group" id="categoryGroup">
-        <h3>Catégories</h3>
-        <button data-category="all" class="active">Toutes <span class="count"></span></button>
+        <h3>Categories</h3>
+        <button data-category="all" class="active">All <span class="count"></span></button>
         <button data-category="sans">Sans Serif <span class="count"></span></button>
         <button data-category="serif">Serif <span class="count"></span></button>
         <button data-category="mono">Monospace <span class="count"></span></button>
@@ -450,42 +450,42 @@
 
       <div class="filter-group" id="sourceGroup">
         <h3>Source</h3>
-        <button data-source="all" class="active">Toutes <span class="count"></span></button>
+        <button data-source="all" class="active">All <span class="count"></span></button>
         <button data-source="google">Figma Cloud <span class="count"></span></button>
-        <button data-source="system">Système <span class="count"></span></button>
+        <button data-source="system">System <span class="count"></span></button>
       </div>
 
       <div class="filter-group" id="collectionGroup">
         <h3>Collections</h3>
         <div id="collectionList"></div>
-        <button id="newProjectBtn" class="new-project">+ Nouveau projet</button>
+        <button id="newProjectBtn" class="new-project">+ New project</button>
       </div>
     </aside>
 
     <section class="list-pane">
       <div class="list-toolbar">
-        <button class="toolbar-btn" id="clearBtn" disabled>Tout décocher</button>
+        <button class="toolbar-btn" id="clearBtn" disabled>Deselect all</button>
       </div>
-      <div class="list" id="list" aria-label="Aperçu des polices"></div>
+      <div class="list" id="list" aria-label="Font previews"></div>
     </section>
   </main>
 
   <footer>
-    <span class="summary" id="summary">Chargement des polices…</span>
+    <span class="summary" id="summary">Loading fonts…</span>
     <div class="collect-wrap">
-      <button id="collectBtn" disabled>Ajouter à la collection <span class="chev">▾</span></button>
+      <button id="collectBtn" disabled>Add to collection <span class="chev">▾</span></button>
       <div class="menu" id="collectMenu" hidden></div>
     </div>
-    <button id="addBtn" disabled>Ajouter au Canvas</button>
+    <button id="addBtn" disabled>Add to Canvas</button>
   </footer>
 
 <script>
 'use strict';
 
 /* ════════════════════════════════════════════════════
-   Classification heuristique des polices.
-   L'API Figma ne fournit pas de catégorie : on classe
-   par mots-clés sur le nom de famille.
+   Heuristic font classification.
+   The Figma API provides no category, so families are
+   classified by keywords in their name.
    ════════════════════════════════════════════════════ */
 
 const MONO_KEYWORDS = [
@@ -526,10 +526,10 @@ function classify(family) {
 }
 
 /* ════════════════════════════════════════════════════
-   Polices Google Fonts populaires : pour celles-ci, on
-   injecte dynamiquement la feuille de style Google Fonts
-   afin que l'aperçu HTML fonctionne même si la police
-   n'est pas installée localement (police cloud Figma).
+   Popular Google Fonts families: for these, the Google
+   Fonts stylesheet is injected dynamically so the HTML
+   preview renders even when the font is not installed
+   locally (Figma cloud font).
    ════════════════════════════════════════════════════ */
 
 const GOOGLE_FONTS = new Set([
@@ -565,7 +565,7 @@ const GOOGLE_FONTS = new Set([
   'Noticia Text', 'Cinzel', 'Marcellus', 'Forum', 'Italiana', 'Julius Sans One'
 ]);
 
-/* ── Injection paresseuse des feuilles Google Fonts ── */
+/* ── Lazy injection of Google Fonts stylesheets ── */
 const requestedGoogleFonts = new Set();
 let pendingGoogleFonts = [];
 let flushTimer = null;
@@ -591,7 +591,7 @@ function flushGoogleFonts() {
 }
 
 /* ════════════════════════════════════════════════════
-   État de l'application
+   Application state
    ════════════════════════════════════════════════════ */
 
 const BATCH_SIZE = 50;
@@ -600,7 +600,7 @@ const state = {
   allFamilies: [],          // [{ family, styles, category, isGoogle }]
   filtered: [],
   renderedCount: 0,
-  selected: new Map(),      // family -> style par défaut
+  selected: new Map(),      // family -> default style
   query: '',
   category: 'all',
   source: 'all',
@@ -608,8 +608,8 @@ const state = {
   fontSize: 36,
   creating: false,
   availableSet: new Set(),
-  collection: null,         // id de la collection active (filtre), ou null
-  collections: [{ id: 'favorites', name: 'Favoris', fonts: [] }]
+  collection: null,         // id of the active collection (filter), or null
+  collections: [{ id: 'favorites', name: 'Favorites', fonts: [] }]
 };
 
 const listEl = document.getElementById('list');
@@ -625,7 +625,7 @@ const collectMenu = document.getElementById('collectMenu');
 const collectionList = document.getElementById('collectionList');
 const newProjectBtn = document.getElementById('newProjectBtn');
 
-/* Style par défaut d'une famille : Regular si présent, sinon le plus proche. */
+/* Default style of a family: Regular when present, otherwise the closest match. */
 function pickDefaultStyle(styles) {
   const preferred = ['regular', 'normal', 'book', 'roman', 'medium', '400'];
   for (const p of preferred) {
@@ -636,10 +636,10 @@ function pickDefaultStyle(styles) {
 }
 
 /* ════════════════════════════════════════════════════
-   Collections : « Favoris » est une collection par
-   défaut épinglée ; les projets sont des collections
-   nommées. Persistance via figma.clientStorage côté
-   sandbox (messages save-collections / collections).
+   Collections: "Favorites" is a pinned default
+   collection; projects are named collections.
+   Persisted through figma.clientStorage on the sandbox
+   side (save-collections / collections messages).
    ════════════════════════════════════════════════════ */
 
 function favorites() {
@@ -691,7 +691,7 @@ function addSelectionTo(col) {
   persistCollections();
   renderCollections();
   if (state.collection) applyFilters();
-  flashSummary(added + ' police' + (added > 1 ? 's' : '') + ' ajoutée' + (added > 1 ? 's' : '') + ' à « ' + col.name + ' »');
+  flashSummary(added + ' font' + (added > 1 ? 's' : '') + ' added to “' + col.name + '”');
 }
 
 let summaryTimer = null;
@@ -701,7 +701,7 @@ function flashSummary(text) {
   summaryTimer = setTimeout(updateSummary, 2500);
 }
 
-/* ── Squelettes pendant le chargement initial ── */
+/* ── Skeletons during the initial load ── */
 function showSkeletons() {
   listEl.innerHTML = '';
   for (let i = 0; i < 8; i++) {
@@ -712,7 +712,7 @@ function showSkeletons() {
   }
 }
 
-/* ── Filtrage ── */
+/* ── Filtering ── */
 function applyFilters() {
   const q = state.query.trim().toLowerCase();
   const col = activeCollection();
@@ -727,7 +727,7 @@ function applyFilters() {
     return true;
   });
 
-  // Polices d'une collection absentes de cette machine : affichées grisées.
+  // Collection fonts missing from this machine are shown grayed out.
   if (col) {
     for (const f of col.fonts) {
       if (!state.availableSet.has(f.family) && (!q || f.family.toLowerCase().includes(q))) {
@@ -740,7 +740,7 @@ function applyFilters() {
   updateSummary();
 }
 
-/* ── Rendu par lots (lazy loading au défilement) ── */
+/* ── Batched rendering (lazy loading on scroll) ── */
 let sentinel = null;
 const sentinelObserver = new IntersectionObserver(entries => {
   if (entries[0].isIntersecting) renderNextBatch();
@@ -768,11 +768,11 @@ function renderFromScratch() {
     const p = document.createElement('p');
     const col = activeCollection();
     p.textContent = col && col.fonts.length === 0
-      ? "« " + col.name + " » est vide : cochez des polices puis « Ajouter à la collection », ou cliquez sur l'étoile d'une ligne."
-      : 'Aucune police ne correspond à ces filtres.';
+      ? '“' + col.name + '” is empty: check some fonts then use “Add to collection”, or click the star on a row.'
+      : 'No fonts match these filters.';
     empty.appendChild(p);
     const reset = document.createElement('button');
-    reset.textContent = 'Réinitialiser les filtres';
+    reset.textContent = 'Reset filters';
     reset.addEventListener('click', resetFilters);
     empty.appendChild(reset);
     listEl.appendChild(empty);
@@ -844,7 +844,7 @@ function buildRow(entry) {
     row.classList.add('unavailable');
     const badge = document.createElement('span');
     badge.className = 'badge';
-    badge.textContent = 'Indisponible sur cette machine';
+    badge.textContent = 'Not available on this machine';
     meta.appendChild(badge);
   }
 
@@ -863,7 +863,7 @@ function buildRow(entry) {
     remove.type = 'button';
     remove.className = 'remove';
     remove.textContent = '✕';
-    remove.title = 'Retirer de la collection';
+    remove.title = 'Remove from collection';
     remove.addEventListener('click', e => {
       e.preventDefault();
       e.stopPropagation();
@@ -878,7 +878,7 @@ function buildRow(entry) {
   } else {
     const star = document.createElement('button');
     star.type = 'button';
-    star.title = 'Favori';
+    star.title = 'Favorite';
     const syncStar = () => {
       const fav = isFavorite(entry.family);
       star.className = 'star' + (fav ? ' starred' : '');
@@ -899,18 +899,18 @@ function buildRow(entry) {
   return row;
 }
 
-/* ── Pied de page ── */
+/* ── Footer ── */
 function updateSummary() {
   const n = state.selected.size;
-  summaryEl.textContent = state.filtered.length + ' police' + (state.filtered.length > 1 ? 's' : '')
-    + (n > 0 ? ' · ' + n + ' sélectionnée' + (n > 1 ? 's' : '') : '');
+  summaryEl.textContent = state.filtered.length + ' font' + (state.filtered.length > 1 ? 's' : '')
+    + (n > 0 ? ' · ' + n + ' selected' : '');
   clearBtn.disabled = n === 0;
   collectBtn.disabled = n === 0;
   addBtn.disabled = n === 0 || state.creating;
   addBtn.textContent = n === 0
-    ? 'Ajouter au Canvas'
-    : 'Ajouter les ' + n + ' police' + (n > 1 ? 's' : '') + ' sélectionnées au Canvas';
-  if (n === 1) addBtn.textContent = 'Ajouter la police sélectionnée au Canvas';
+    ? 'Add to Canvas'
+    : 'Add the ' + n + ' selected fonts to Canvas';
+  if (n === 1) addBtn.textContent = 'Add the selected font to Canvas';
 }
 
 function resetFilters() {
@@ -924,7 +924,7 @@ function resetFilters() {
   applyFilters();
 }
 
-/* ── Compteurs et boutons de filtres ── */
+/* ── Filter buttons and counters ── */
 function syncFilterButtons() {
   document.querySelectorAll('#categoryGroup button').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.category === state.category);
@@ -949,7 +949,7 @@ function updateFilterCounts() {
   });
 }
 
-/* ── Sidebar : rendu des collections ── */
+/* ── Sidebar: collections rendering ── */
 function renderCollections() {
   collectionList.innerHTML = '';
   for (const col of state.collections) {
@@ -975,12 +975,12 @@ function renderCollections() {
     item.appendChild(btn);
 
     if (col.id !== 'favorites') {
-      btn.title = 'Double-clic pour renommer';
+      btn.title = 'Double-click to rename';
       btn.addEventListener('dblclick', () => startRename(col, item));
       const del = document.createElement('button');
       del.type = 'button';
       del.className = 'col-del';
-      del.title = 'Supprimer le projet';
+      del.title = 'Delete project';
       del.textContent = '✕';
       del.addEventListener('click', () => {
         state.collections = state.collections.filter(c => c.id !== col.id);
@@ -988,7 +988,7 @@ function renderCollections() {
         persistCollections();
         renderCollections();
         applyFilters();
-        flashSummary('Projet « ' + col.name + ' » supprimé');
+        flashSummary('Project “' + col.name + '” deleted');
       });
       item.appendChild(del);
     }
@@ -1024,7 +1024,7 @@ newProjectBtn.addEventListener('click', () => {
   const input = document.createElement('input');
   input.type = 'text';
   input.className = 'rename-input';
-  input.placeholder = 'Nom du projet…';
+  input.placeholder = 'Project name…';
   newProjectBtn.replaceWith(input);
   input.focus();
   input.addEventListener('blur', () => {
@@ -1038,7 +1038,7 @@ newProjectBtn.addEventListener('click', () => {
   });
 });
 
-/* ── Menu « Ajouter à la collection » ── */
+/* ── "Add to collection" menu ── */
 function menuItem(label, onClick) {
   const btn = document.createElement('button');
   btn.type = 'button';
@@ -1050,7 +1050,7 @@ function menuItem(label, onClick) {
 
 function buildCollectMenu() {
   collectMenu.innerHTML = '';
-  collectMenu.appendChild(menuItem('★ Ajouter aux favoris', () => {
+  collectMenu.appendChild(menuItem('★ Add to favorites', () => {
     addSelectionTo(favorites());
     closeCollectMenu();
   }));
@@ -1061,7 +1061,7 @@ function buildCollectMenu() {
     divider.className = 'divider';
     collectMenu.appendChild(divider);
     for (const p of projects) {
-      collectMenu.appendChild(menuItem('Ajouter à « ' + p.name + ' »', () => {
+      collectMenu.appendChild(menuItem('Add to “' + p.name + '”', () => {
         addSelectionTo(p);
         closeCollectMenu();
       }));
@@ -1071,19 +1071,19 @@ function buildCollectMenu() {
   const divider = document.createElement('div');
   divider.className = 'divider';
   collectMenu.appendChild(divider);
-  collectMenu.appendChild(menuItem('+ Nouveau projet…', showNewProjectForm));
+  collectMenu.appendChild(menuItem('+ New project…', showNewProjectForm));
 }
 
-// Champ de nom inline dans le menu : pas de modal pour saisir un mot.
+// Inline name field inside the menu: no modal just to type one word.
 function showNewProjectForm() {
   const form = document.createElement('div');
   form.className = 'new-form';
   const input = document.createElement('input');
   input.type = 'text';
-  input.placeholder = 'Nom du projet (client, marque…)';
+  input.placeholder = 'Project name (client, brand…)';
   const create = document.createElement('button');
   create.type = 'button';
-  create.textContent = 'Créer';
+  create.textContent = 'Create';
   const submit = () => {
     const name = input.value.trim();
     if (!name) { input.focus(); return; }
@@ -1091,7 +1091,7 @@ function showNewProjectForm() {
     state.selected.forEach((style, family) => fonts.push({ family, style }));
     const project = createProject(name, fonts);
     closeCollectMenu();
-    flashSummary(fonts.length + ' police' + (fonts.length > 1 ? 's' : '') + ' → nouveau projet « ' + project.name + ' »');
+    flashSummary(fonts.length + ' font' + (fonts.length > 1 ? 's' : '') + ' → new project “' + project.name + '”');
   };
   create.addEventListener('click', submit);
   input.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
@@ -1117,7 +1117,7 @@ document.addEventListener('click', closeCollectMenu);
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCollectMenu(); });
 
 /* ════════════════════════════════════════════════════
-   Événements
+   Events
    ════════════════════════════════════════════════════ */
 
 sampleInput.addEventListener('input', () => {
@@ -1171,7 +1171,7 @@ addBtn.addEventListener('click', () => {
   if (state.selected.size === 0 || state.creating) return;
   state.creating = true;
   addBtn.disabled = true;
-  addBtn.textContent = 'Ajout en cours…';
+  addBtn.textContent = 'Adding…';
   const fonts = [];
   state.selected.forEach((style, family) => fonts.push({ family, style }));
   parent.postMessage({
@@ -1184,7 +1184,7 @@ addBtn.addEventListener('click', () => {
   }, '*');
 });
 
-/* ── Messages du backend (code.ts) ── */
+/* ── Messages from the backend (code.ts) ── */
 window.onmessage = event => {
   const msg = event.data.pluginMessage;
   if (!msg) return;
@@ -1205,6 +1205,9 @@ window.onmessage = event => {
   if (msg.type === 'collections') {
     if (Array.isArray(msg.collections) && msg.collections.length > 0) {
       state.collections = msg.collections;
+      // The pinned default collection keeps its UI name even if stored data
+      // was saved under another locale.
+      state.collections[0].name = 'Favorites';
     }
     renderCollections();
     if (state.allFamilies.length > 0) applyFilters();
@@ -1212,7 +1215,7 @@ window.onmessage = event => {
   }
 
   if (msg.type === 'progress') {
-    addBtn.textContent = 'Ajout… ' + msg.done + '/' + msg.total;
+    addBtn.textContent = 'Adding… ' + msg.done + '/' + msg.total;
     return;
   }
 
@@ -1222,7 +1225,7 @@ window.onmessage = event => {
   }
 };
 
-/* ── Démarrage ── */
+/* ── Startup ── */
 showSkeletons();
 renderCollections();
 parent.postMessage({ pluginMessage: { type: 'init' } }, '*');

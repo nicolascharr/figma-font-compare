@@ -11,6 +11,6 @@
       "https://fonts.googleapis.com",
       "https://fonts.gstatic.com"
     ],
-    "reasoning": "Charge les feuilles de style Google Fonts afin que les polices cloud (non installées sur le système) s'affichent correctement dans l'aperçu de l'interface du plugin."
+    "reasoning": "Loads Google Fonts stylesheets so that cloud fonts (not installed on the system) render correctly in the plugin UI preview."
   }
 }
