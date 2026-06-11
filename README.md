@@ -4,7 +4,7 @@
 
 A Figma plugin to explore and compare typefaces. Type some text (a brand name, a tagline), preview it instantly in **every font available in Figma** (system fonts + cloud fonts), check the ones you like and insert them on the canvas in one click, neatly aligned.
 
-![Font Stack in action](screenshots/demo.gif)
+![Font Stack plugin](screenshots/fontstack-plugin.png)
 
 ## Features
 
