@@ -526,68 +526,111 @@ function classify(family) {
 }
 
 /* ════════════════════════════════════════════════════
-   Popular Google Fonts families: for these, the Google
-   Fonts stylesheet is injected dynamically so the HTML
-   preview renders even when the font is not installed
-   locally (Figma cloud font).
+   Cloud font previews.
+   Families returned by Figma but not installed on this
+   machine (Figma cloud fonts — essentially the Google
+   Fonts library) are fetched on demand from the Google
+   Fonts CSS API when their row becomes visible, and
+   registered under the exact Figma family name so the
+   preview matches what lands on the canvas.
    ════════════════════════════════════════════════════ */
 
-const GOOGLE_FONTS = new Set([
-  'Inter', 'Roboto', 'Open Sans', 'Lato', 'Montserrat', 'Poppins', 'Raleway',
-  'Oswald', 'Merriweather', 'Playfair Display', 'Nunito', 'Nunito Sans',
-  'Rubik', 'Work Sans', 'Source Sans Pro', 'Source Sans 3', 'Source Serif Pro',
-  'Source Serif 4', 'Source Code Pro', 'Noto Sans', 'Noto Serif', 'PT Sans',
-  'PT Serif', 'PT Mono', 'Ubuntu', 'Ubuntu Mono', 'Mukta', 'Quicksand',
-  'Barlow', 'Barlow Condensed', 'Heebo', 'Karla', 'Manrope', 'Josefin Sans',
-  'Libre Franklin', 'Libre Baskerville', 'Libre Caslon Text', 'Fira Sans',
-  'Fira Code', 'Inconsolata', 'JetBrains Mono', 'Space Mono', 'Space Grotesk',
-  'IBM Plex Sans', 'IBM Plex Serif', 'IBM Plex Mono', 'Roboto Slab',
-  'Roboto Mono', 'Roboto Condensed', 'Lora', 'Crimson Text', 'Crimson Pro',
-  'Cormorant', 'Cormorant Garamond', 'EB Garamond', 'Spectral', 'Literata',
-  'Bitter', 'Domine', 'Vollkorn', 'Alegreya', 'Alegreya Sans', 'Cardo',
-  'Neuton', 'Arvo', 'Zilla Slab', 'Frank Ruhl Libre', 'Old Standard TT',
-  'Prata', 'Abril Fatface', 'Alfa Slab One', 'Bungee', 'Monoton', 'Bangers',
-  'Fredoka', 'Righteous', 'Lobster', 'Pacifico', 'Caveat', 'Dancing Script',
-  'Satisfy', 'Sacramento', 'Great Vibes', 'Cookie', 'Courgette', 'Kalam',
-  'Indie Flower', 'Shadows Into Light', 'Amatic SC', 'Permanent Marker',
-  'Rock Salt', 'Patrick Hand', 'Gloria Hallelujah', 'Luckiest Guy', 'Chewy',
-  'Tangerine', 'Yellowtail', 'Allura', 'Parisienne', 'Press Start 2P',
-  'VT323', 'DM Sans', 'DM Serif Display', 'DM Serif Text', 'DM Mono',
-  'Plus Jakarta Sans', 'Sora', 'Outfit', 'Epilogue', 'Lexend', 'Urbanist',
-  'Figtree', 'Onest', 'Schibsted Grotesk', 'Instrument Sans', 'Instrument Serif',
-  'Bricolage Grotesque', 'Fraunces', 'Newsreader', 'Petrona', 'Gelasio',
-  'Tinos', 'Archivo', 'Archivo Black', 'Anton', 'Bebas Neue', 'Exo 2',
-  'Cabin', 'Catamaran', 'Chivo', 'Cousine', 'Hind', 'Jost', 'Kanit',
-  'Mulish', 'Overpass', 'Prompt', 'Public Sans', 'Red Hat Display',
-  'Red Hat Text', 'Sarabun', 'Teko', 'Titillium Web', 'Varela Round',
-  'Yanone Kaffeesatz', 'Assistant', 'Asap', 'Signika', 'Maven Pro',
-  'M PLUS Rounded 1c', 'Comfortaa', 'Dosis', 'Questrial', 'Oxygen',
-  'Noticia Text', 'Cinzel', 'Marcellus', 'Forum', 'Italiana', 'Julius Sans One'
-]);
-
-/* ── Lazy injection of Google Fonts stylesheets ── */
-const requestedGoogleFonts = new Set();
-let pendingGoogleFonts = [];
-let flushTimer = null;
-
-function queueGoogleFont(family) {
-  if (!GOOGLE_FONTS.has(family) || requestedGoogleFonts.has(family)) return;
-  requestedGoogleFonts.add(family);
-  pendingGoogleFonts.push(family);
-  if (!flushTimer) flushTimer = setTimeout(flushGoogleFonts, 250);
+/* Local availability detection: a family that renders with the same
+   metrics as every generic fallback is not installed locally. */
+const measureCtx = document.createElement('canvas').getContext('2d');
+const MEASURE_SAMPLE = 'mmmmmmmmmmlliWQ@#69';
+const baseWidths = {};
+for (const generic of ['monospace', 'serif', 'sans-serif']) {
+  measureCtx.font = '72px ' + generic;
+  baseWidths[generic] = measureCtx.measureText(MEASURE_SAMPLE).width;
+}
+function isLocallyAvailable(family) {
+  const quoted = '"' + family.replace(/"/g, '') + '"';
+  for (const generic of ['monospace', 'serif', 'sans-serif']) {
+    measureCtx.font = '72px ' + quoted + ', ' + generic;
+    if (measureCtx.measureText(MEASURE_SAMPLE).width !== baseWidths[generic]) return true;
+  }
+  return false;
 }
 
-function flushGoogleFonts() {
-  flushTimer = null;
-  if (pendingGoogleFonts.length === 0) return;
-  const params = pendingGoogleFonts
-    .map(f => 'family=' + encodeURIComponent(f).replace(/%20/g, '+'))
-    .join('&');
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = 'https://fonts.googleapis.com/css2?' + params + '&display=swap';
-  document.head.appendChild(link);
-  pendingGoogleFonts = [];
+/* Figma exposes weight variants as separate families ("Abhaya Libre
+   ExtraBold") while Google Fonts expects the base family plus a weight
+   axis ("Abhaya Libre" + wght@800). */
+const GF_WEIGHT_SUFFIXES = {
+  Thin: 100, Hairline: 100, ExtraLight: 200, UltraLight: 200, Light: 300,
+  Regular: 400, Medium: 500, SemiBold: 600, DemiBold: 600, Bold: 700,
+  ExtraBold: 800, UltraBold: 800, Black: 900, Heavy: 900
+};
+
+function googleFontsUrl(family, withAxes) {
+  let base = family;
+  let italic = false;
+  let weight = null;
+  if (withAxes) {
+    if (base.endsWith(' Italic')) { italic = true; base = base.slice(0, -7); }
+    for (const suffix in GF_WEIGHT_SUFFIXES) {
+      if (base.endsWith(' ' + suffix)) {
+        weight = GF_WEIGHT_SUFFIXES[suffix];
+        base = base.slice(0, -(suffix.length + 1));
+        break;
+      }
+    }
+  }
+  let spec = '';
+  if (italic && weight) spec = ':ital,wght@1,' + weight;
+  else if (italic) spec = ':ital@1';
+  else if (weight) spec = ':wght@' + weight;
+  const encoded = encodeURIComponent(base).replace(/%20/g, '+');
+  return 'https://fonts.googleapis.com/css2?family=' + encoded + spec + '&display=swap';
+}
+
+async function fetchCss(url) {
+  try {
+    const response = await fetch(url);
+    return response.ok ? await response.text() : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+const requestedPreviews = new Set();
+const failedPreviews = new Set();
+
+async function loadCloudPreview(family) {
+  if (requestedPreviews.has(family)) return;
+  requestedPreviews.add(family);
+
+  // Unknown families make the whole request fail, so one request per
+  // family: first with the weight/italic axes, then the plain family.
+  let css = await fetchCss(googleFontsUrl(family, true));
+  if (css === null) css = await fetchCss(googleFontsUrl(family, false));
+  if (css === null) {
+    failedPreviews.add(family);
+    markApproximatePreview(family);
+    return;
+  }
+
+  // Alias every @font-face onto the exact Figma family name, with
+  // neutral weight/style so the preview element always matches it.
+  const escaped = family.replace(/'/g, "\\'");
+  const aliased = css
+    .replace(/font-family:\s*'[^']*'/g, "font-family: '" + escaped + "'")
+    .replace(/font-weight:\s*[^;]+;/g, 'font-weight: normal;')
+    .replace(/font-style:\s*italic;/g, 'font-style: normal;');
+  const style = document.createElement('style');
+  style.textContent = aliased;
+  document.head.appendChild(style);
+}
+
+function markApproximatePreview(family) {
+  document.querySelectorAll('.row').forEach(row => {
+    if (row.dataset.family === family && !row.querySelector('.badge.approx')) {
+      const badge = document.createElement('span');
+      badge.className = 'badge approx';
+      badge.textContent = 'Approximate preview';
+      row.querySelector('.meta').appendChild(badge);
+    }
+  });
 }
 
 /* ════════════════════════════════════════════════════
@@ -749,7 +792,7 @@ const sentinelObserver = new IntersectionObserver(entries => {
 const visibilityObserver = new IntersectionObserver(entries => {
   for (const entry of entries) {
     if (entry.isIntersecting) {
-      queueGoogleFont(entry.target.dataset.family);
+      if (entry.target.dataset.cloud === '1') loadCloudPreview(entry.target.dataset.family);
       visibilityObserver.unobserve(entry.target);
     }
   }
@@ -800,6 +843,7 @@ function buildRow(entry) {
   const row = document.createElement('label');
   row.className = 'row';
   row.dataset.family = entry.family;
+  row.dataset.cloud = entry.isGoogle || entry.unavailable ? '1' : '0';
   if (state.selected.has(entry.family)) row.classList.add('checked');
 
   const checkbox = document.createElement('input');
@@ -845,6 +889,13 @@ function buildRow(entry) {
     const badge = document.createElement('span');
     badge.className = 'badge';
     badge.textContent = 'Not available on this machine';
+    meta.appendChild(badge);
+  }
+
+  if (failedPreviews.has(entry.family)) {
+    const badge = document.createElement('span');
+    badge.className = 'badge approx';
+    badge.textContent = 'Approximate preview';
     meta.appendChild(badge);
   }
 
@@ -1190,11 +1241,12 @@ window.onmessage = event => {
   if (!msg) return;
 
   if (msg.type === 'fonts') {
+    // "Cloud" means: returned by Figma but not installed on this machine.
     state.allFamilies = msg.families.map(f => ({
       family: f.family,
       styles: f.styles,
       category: classify(f.family),
-      isGoogle: GOOGLE_FONTS.has(f.family)
+      isGoogle: !isLocallyAvailable(f.family)
     }));
     state.availableSet = new Set(state.allFamilies.map(f => f.family));
     updateFilterCounts();
